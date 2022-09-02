@@ -18,6 +18,7 @@
 #define CARTOGRAPHER_MAPPING_ID_H_
 
 #include <algorithm>
+#include <functional>
 #include <iostream>
 #include <iterator>
 #include <limits>
@@ -25,6 +26,7 @@
 #include <memory>
 #include <ostream>
 #include <tuple>
+#include <type_traits>
 #include <vector>
 
 #include "absl/memory/memory.h"
@@ -419,5 +421,35 @@ class MapById {
 
 }  // namespace mapping
 }  // namespace cartographer
+
+namespace std {
+
+template <>
+struct hash<cartographer::mapping::NodeId> {
+  std::size_t operator()(
+      const cartographer::mapping::NodeId& id) const noexcept {
+    static_assert(std::is_same<decltype(id.trajectory_id), int>::value &&
+                      std::is_same<decltype(id.node_index), int>::value,
+                  "NodeId hash function expects members to be ints");
+    long long h = id.trajectory_id;
+    h = (h << 32) | id.node_index;
+    return std::hash<long long>{}(h);
+  }
+};
+
+template <>
+struct hash<cartographer::mapping::SubmapId> {
+  std::size_t operator()(
+      const cartographer::mapping::SubmapId& id) const noexcept {
+    static_assert(std::is_same<decltype(id.trajectory_id), int>::value &&
+                      std::is_same<decltype(id.submap_index), int>::value,
+                  "SubmapId hash function expects members to be ints");
+    long long h = id.trajectory_id;
+    h = (h << 32) | id.submap_index;
+    return std::hash<long long>{}(h);
+  }
+};
+
+}  // namespace std
 
 #endif  // CARTOGRAPHER_MAPPING_ID_H_
