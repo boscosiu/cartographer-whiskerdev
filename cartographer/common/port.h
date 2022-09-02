@@ -17,11 +17,11 @@
 #ifndef CARTOGRAPHER_COMMON_PORT_H_
 #define CARTOGRAPHER_COMMON_PORT_H_
 
-#include <boost/iostreams/device/back_inserter.hpp>
-#include <boost/iostreams/filter/gzip.hpp>
-#include <boost/iostreams/filtering_stream.hpp>
+#include <zlib.h>
+
 #include <cinttypes>
 #include <cmath>
+#include <memory>
 #include <string>
 
 namespace cartographer {
@@ -45,24 +45,51 @@ inline int64 RoundToInt64(const float x) { return std::lround(x); }
 
 inline int64 RoundToInt64(const double x) { return std::lround(x); }
 
+inline void GzipOp(const std::string& src, std::string* dest, bool compress) {
+  const auto buf_size = 65536;
+  const auto buf = std::make_unique<Bytef[]>(buf_size);
+  int response;
+  z_stream zstream{};
+
+  if (compress) {
+    deflateInit2(&zstream, Z_BEST_SPEED, Z_DEFLATED, 31, 8, Z_DEFAULT_STRATEGY);
+  } else {
+    inflateInit2(&zstream, 31);
+  }
+
+  zstream.next_in = reinterpret_cast<Bytef*>(const_cast<char*>(src.data()));
+  zstream.avail_in = src.size();
+  dest->clear();
+
+  do {
+    zstream.next_out = buf.get();
+    zstream.avail_out = buf_size;
+
+    if (compress) {
+      response = deflate(&zstream, Z_FINISH);
+    } else {
+      response = inflate(&zstream, Z_FINISH);
+    }
+
+    dest->append(reinterpret_cast<const char*>(buf.get()),
+                 buf_size - zstream.avail_out);
+  } while (response != Z_STREAM_END);
+
+  if (compress) {
+    deflateEnd(&zstream);
+  } else {
+    inflateEnd(&zstream);
+  }
+}
+
 inline void FastGzipString(const std::string& uncompressed,
                            std::string* compressed) {
-  boost::iostreams::filtering_ostream out;
-  out.push(
-      boost::iostreams::gzip_compressor(boost::iostreams::zlib::best_speed));
-  out.push(boost::iostreams::back_inserter(*compressed));
-  boost::iostreams::write(out,
-                          reinterpret_cast<const char*>(uncompressed.data()),
-                          uncompressed.size());
+  GzipOp(uncompressed, compressed, true);
 }
 
 inline void FastGunzipString(const std::string& compressed,
                              std::string* decompressed) {
-  boost::iostreams::filtering_ostream out;
-  out.push(boost::iostreams::gzip_decompressor());
-  out.push(boost::iostreams::back_inserter(*decompressed));
-  boost::iostreams::write(out, reinterpret_cast<const char*>(compressed.data()),
-                          compressed.size());
+  GzipOp(compressed, decompressed, false);
 }
 
 }  // namespace common

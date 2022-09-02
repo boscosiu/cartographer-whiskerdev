@@ -35,12 +35,7 @@ if(CARTOGRAPHER_ENABLE_TESTING)
 endif()
 
 find_package(absl REQUIRED)
-set(BOOST_COMPONENTS iostreams)
-if(WIN32)
-  list(APPEND BOOST_COMPONENTS zlib)
-  set(Boost_USE_STATIC_LIBS FALSE)
-endif()
-find_package(Boost REQUIRED COMPONENTS ${BOOST_COMPONENTS})
+find_package(ZLIB REQUIRED)
 find_package(Ceres REQUIRED COMPONENTS SparseLinearAlgebraLibrary)
 find_package(Eigen3 REQUIRED)
 find_package(Lua REQUIRED)
@@ -256,8 +251,8 @@ target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC
 target_link_libraries(${PROJECT_NAME} PUBLIC ${LUA_LIBRARIES})
 
 target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC
-  "${Boost_INCLUDE_DIRS}")
-target_link_libraries(${PROJECT_NAME} PUBLIC ${Boost_LIBRARIES})
+  "${ZLIB_INCLUDE_DIRS}")
+target_link_libraries(${PROJECT_NAME} PUBLIC ${ZLIB_LIBRARIES})
 
 find_package(glog REQUIRED)
 set(GLOG_LIBRARY glog::glog)
