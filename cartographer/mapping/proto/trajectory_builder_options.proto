@@ -44,6 +44,8 @@ message TrajectoryBuilderOptions {
   bool collate_landmarks = 8;
 
   MotionFilterOptions pose_graph_odometry_motion_filter = 9;
+
+  transform.proto.Rigid3d initial_global_pose = 10;
 }
 
 message SensorId {

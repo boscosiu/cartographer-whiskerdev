@@ -1032,6 +1032,12 @@ void PoseGraph3D::SetInitialTrajectoryPose(const int from_trajectory_id,
       InitialTrajectoryPose{to_trajectory_id, pose, time};
 }
 
+void PoseGraph3D::SetInitialGlobalPose(const int trajectory_id,
+                                       const transform::Rigid3d& pose) {
+  absl::MutexLock locker(&mutex_);
+  data_.initial_global_poses[trajectory_id] = pose;
+}
+
 transform::Rigid3d PoseGraph3D::GetInterpolatedGlobalTrajectoryPose(
     const int trajectory_id, const common::Time time) const {
   CHECK_GT(data_.trajectory_nodes.SizeOfTrajectoryOrZero(trajectory_id), 0);
@@ -1103,7 +1109,12 @@ transform::Rigid3d PoseGraph3D::ComputeLocalToGlobalTransform(
                                                  it->second.time) *
              it->second.relative_pose;
     } else {
-      return transform::Rigid3d::Identity();
+      const auto global_pose = data_.initial_global_poses.find(trajectory_id);
+      if (global_pose != data_.initial_global_poses.end()) {
+        return global_pose->second;
+      } else {
+        return transform::Rigid3d::Identity();
+      }
     }
   }
   const SubmapId last_optimized_submap_id = std::prev(end_it)->id;

@@ -134,6 +134,9 @@ class PoseGraph : public PoseGraphInterface {
                                         int to_trajectory_id,
                                         const transform::Rigid3d& pose,
                                         const common::Time time) = 0;
+
+  virtual void SetInitialGlobalPose(int trajectory_id,
+                                    const transform::Rigid3d& pose) = 0;
 };
 
 std::vector<PoseGraph::Constraint> FromProto(

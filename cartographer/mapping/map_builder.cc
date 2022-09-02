@@ -153,6 +153,10 @@ int MapBuilder::AddTrajectoryBuilder(
         trajectory_id, initial_trajectory_pose.to_trajectory_id(),
         transform::ToRigid3(initial_trajectory_pose.relative_pose()),
         common::FromUniversal(initial_trajectory_pose.timestamp()));
+  } else if (trajectory_options.has_initial_global_pose()) {
+    pose_graph_->SetInitialGlobalPose(
+        trajectory_id,
+        transform::ToRigid3(trajectory_options.initial_global_pose()));
   }
   proto::TrajectoryBuilderOptionsWithSensorIds options_with_sensor_ids_proto;
   for (const auto& sensor_id : expected_sensor_ids) {

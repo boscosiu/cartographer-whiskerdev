@@ -27,6 +27,7 @@
 #include "cartographer/mapping/pose_graph.h"
 #include "cartographer/mapping/pose_graph_interface.h"
 #include "cartographer/mapping/submaps.h"
+#include "cartographer/transform/rigid_transform.h"
 
 namespace cartographer {
 namespace mapping {
@@ -82,6 +83,8 @@ struct PoseGraphData {
 
   // Set of all initial trajectory poses.
   std::map<int, PoseGraph::InitialTrajectoryPose> initial_trajectory_poses;
+
+  std::map<int, transform::Rigid3d> initial_global_poses;
 
   std::vector<PoseGraphInterface::Constraint> constraints;
 };
