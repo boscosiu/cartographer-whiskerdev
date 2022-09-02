@@ -40,9 +40,9 @@ if(WIN32)
   set(Boost_USE_STATIC_LIBS FALSE)
 endif()
 find_package(Boost REQUIRED COMPONENTS ${BOOST_COMPONENTS})
-find_package(Ceres REQUIRED COMPONENTS SuiteSparse)
+find_package(Ceres REQUIRED COMPONENTS SparseLinearAlgebraLibrary)
 find_package(Eigen3 REQUIRED)
-find_package(LuaGoogle REQUIRED)
+find_package(Lua REQUIRED)
 if(WIN32)
   # On Windows, Protobuf is incorrectly found by the bundled CMake module, so prefer native CMake config.
   set(protobuf_MODULE_COMPATIBLE TRUE CACHE INTERNAL "")
@@ -62,6 +62,7 @@ endif()
 include(FindPkgConfig)
 if (NOT WIN32)
   PKG_SEARCH_MODULE(CAIRO REQUIRED cairo>=1.12.16)
+  set(CAIRO_LIBRARIES ${CAIRO_LINK_LIBRARIES})
 else()
   find_library(CAIRO_LIBRARIES cairo)
 endif()
@@ -246,12 +247,8 @@ target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC
   "${Boost_INCLUDE_DIRS}")
 target_link_libraries(${PROJECT_NAME} PUBLIC ${Boost_LIBRARIES})
 
-if (WIN32)
-  find_package(glog REQUIRED)
-  set(GLOG_LIBRARY glog::glog)
-else()
-  set(GLOG_LIBRARY glog)
-endif()
+find_package(glog REQUIRED)
+set(GLOG_LIBRARY glog::glog)
 
 target_link_libraries(${PROJECT_NAME} PUBLIC ${GLOG_LIBRARY})
 target_link_libraries(${PROJECT_NAME} PUBLIC gflags)
@@ -264,14 +261,14 @@ if(MSVC)
   target_compile_definitions(${PROJECT_NAME} PUBLIC -D_ENABLE_EXTENDED_ALIGNED_STORAGE -D_USE_MATH_DEFINES)
 endif()
 
-if("${CAIRO_INCLUDE_DIRS}")
+if(NOT "${CAIRO_INCLUDE_DIRS}" STREQUAL "")
   target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC
     "${CAIRO_INCLUDE_DIRS}")
 endif()
 target_link_libraries(${PROJECT_NAME} PUBLIC ${CAIRO_LIBRARIES})
 
 target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC
-  ${PROTOBUF_INCLUDE_DIR})
+  ${PROTOBUF_INCLUDE_DIRS})
 # TODO(hrapp): This should not explicitly list pthread and use
 # PROTOBUF_LIBRARIES, but that failed on first try.
 target_link_libraries(${PROJECT_NAME} PUBLIC ${PROTOBUF_LIBRARY} 
