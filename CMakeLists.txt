@@ -25,6 +25,7 @@ option(BUILD_GRPC "build Cartographer gRPC support" false)
 set(CARTOGRAPHER_HAS_GRPC ${BUILD_GRPC})
 option(BUILD_PROMETHEUS "build Prometheus monitoring support" false)
 option(CARTOGRAPHER_ENABLE_TESTING "enable Cartographer testing" true)
+option(CARTOGRAPHER_BUILD_UTILITIES "build utility binaries" true)
 
 include("${PROJECT_SOURCE_DIR}/cmake/functions.cmake")
 google_initialize_cartographer_project()
@@ -193,25 +194,27 @@ configure_file(
   ${PROJECT_SOURCE_DIR}/cartographer/common/config.h.cmake
   ${PROJECT_BINARY_DIR}/cartographer/common/config.h)
 
-google_binary(cartographer_autogenerate_ground_truth
-  SRCS
-    cartographer/ground_truth/autogenerate_ground_truth_main.cc
-)
+if(CARTOGRAPHER_BUILD_UTILITIES)
+  google_binary(cartographer_autogenerate_ground_truth
+    SRCS
+      cartographer/ground_truth/autogenerate_ground_truth_main.cc
+  )
 
-google_binary(cartographer_compute_relations_metrics
-  SRCS
-    cartographer/ground_truth/compute_relations_metrics_main.cc
-)
+  google_binary(cartographer_compute_relations_metrics
+    SRCS
+      cartographer/ground_truth/compute_relations_metrics_main.cc
+  )
 
-google_binary(cartographer_pbstream
-  SRCS
-  cartographer/io/pbstream_main.cc
-)
+  google_binary(cartographer_pbstream
+    SRCS
+    cartographer/io/pbstream_main.cc
+  )
 
-google_binary(cartographer_print_configuration
-  SRCS
-  cartographer/common/print_configuration_main.cc
-)
+  google_binary(cartographer_print_configuration
+    SRCS
+    cartographer/common/print_configuration_main.cc
+  )
+endif()
 
 if(${BUILD_GRPC})
   google_binary(cartographer_grpc_server
