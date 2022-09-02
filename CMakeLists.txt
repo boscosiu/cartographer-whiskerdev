@@ -26,6 +26,7 @@ set(CARTOGRAPHER_HAS_GRPC ${BUILD_GRPC})
 option(BUILD_PROMETHEUS "build Prometheus monitoring support" false)
 option(CARTOGRAPHER_ENABLE_TESTING "enable Cartographer testing" true)
 option(CARTOGRAPHER_BUILD_UTILITIES "build utility binaries" true)
+option(CARTOGRAPHER_ENABLE_CAIRO_USAGE "build Cartographer code that uses Cairo" true)
 
 include("${PROJECT_SOURCE_DIR}/cmake/functions.cmake")
 google_initialize_cartographer_project()
@@ -59,12 +60,14 @@ if(${BUILD_PROMETHEUS})
   find_package( ZLIB REQUIRED )
 endif()
 
-include(FindPkgConfig)
-if (NOT WIN32)
-  PKG_SEARCH_MODULE(CAIRO REQUIRED cairo>=1.12.16)
-  set(CAIRO_LIBRARIES ${CAIRO_LINK_LIBRARIES})
-else()
-  find_library(CAIRO_LIBRARIES cairo)
+if(CARTOGRAPHER_ENABLE_CAIRO_USAGE)
+  include(FindPkgConfig)
+  if (NOT WIN32)
+    PKG_SEARCH_MODULE(CAIRO REQUIRED cairo>=1.12.16)
+    set(CAIRO_LIBRARIES ${CAIRO_LINK_LIBRARIES})
+  else()
+    find_library(CAIRO_LIBRARIES cairo)
+  endif()
 endif()
 
 # Only build the documentation if we can find Sphinx.
@@ -122,6 +125,15 @@ if (NOT ${BUILD_PROMETHEUS})
   list(REMOVE_ITEM TEST_LIBRARY_SRCS ${ALL_PROMETHEUS_FILES})
   list(REMOVE_ITEM ALL_TESTS ${ALL_PROMETHEUS_FILES})
   list(REMOVE_ITEM ALL_EXECUTABLES ${ALL_PROMETHEUS_FILES})
+endif()
+if (NOT CARTOGRAPHER_ENABLE_CAIRO_USAGE)
+  list(REMOVE_ITEM ALL_LIBRARY_SRCS
+    "${CMAKE_CURRENT_SOURCE_DIR}/cartographer/io/draw_trajectories.cc"
+    "${CMAKE_CURRENT_SOURCE_DIR}/cartographer/io/image.cc"
+    "${CMAKE_CURRENT_SOURCE_DIR}/cartographer/io/points_processor_pipeline_builder.cc"
+    "${CMAKE_CURRENT_SOURCE_DIR}/cartographer/io/probability_grid_points_processor.cc"
+    "${CMAKE_CURRENT_SOURCE_DIR}/cartographer/io/submap_painter.cc"
+    "${CMAKE_CURRENT_SOURCE_DIR}/cartographer/io/xray_points_processor.cc")
 endif()
 set(INSTALL_SOURCE_HDRS ${ALL_LIBRARY_HDRS} ${TEST_LIBRARY_HDRS})
 file(GLOB_RECURSE INTERNAL_HDRS "cartographer/*/internal/*.h")
@@ -261,11 +273,13 @@ if(MSVC)
   target_compile_definitions(${PROJECT_NAME} PUBLIC -D_ENABLE_EXTENDED_ALIGNED_STORAGE -D_USE_MATH_DEFINES)
 endif()
 
-if(NOT "${CAIRO_INCLUDE_DIRS}" STREQUAL "")
-  target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC
-    "${CAIRO_INCLUDE_DIRS}")
+if(CARTOGRAPHER_ENABLE_CAIRO_USAGE)
+  if(NOT "${CAIRO_INCLUDE_DIRS}" STREQUAL "")
+    target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC
+      "${CAIRO_INCLUDE_DIRS}")
+  endif()
+  target_link_libraries(${PROJECT_NAME} PUBLIC ${CAIRO_LIBRARIES})
 endif()
-target_link_libraries(${PROJECT_NAME} PUBLIC ${CAIRO_LIBRARIES})
 
 target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC
   ${PROTOBUF_INCLUDE_DIRS})
