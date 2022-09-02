@@ -137,6 +137,8 @@ class PoseGraph : public PoseGraphInterface {
 
   virtual void SetInitialGlobalPose(int trajectory_id,
                                     const transform::Rigid3d& pose) = 0;
+
+  virtual void SetAllowGlobalLocalization(int trajectory_id, bool allow) = 0;
 };
 
 std::vector<PoseGraph::Constraint> FromProto(

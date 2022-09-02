@@ -267,11 +267,21 @@ void PoseGraph3D::ComputeConstraint(const NodeId& node_id,
       return;
     }
 
+    const bool allow_global_localization_for_node =
+        data_.allow_global_localization.count(node_id.trajectory_id) == 0 ||
+        data_.allow_global_localization.at(node_id.trajectory_id);
+    const bool allow_global_localization_for_submap =
+        data_.allow_global_localization.count(submap_id.trajectory_id) == 0 ||
+        data_.allow_global_localization.at(submap_id.trajectory_id);
+    const bool allow_global_localization = allow_global_localization_for_node &&
+                                           allow_global_localization_for_submap;
+
     const common::Time node_time = GetLatestNodeTime(node_id, submap_id);
     const common::Time last_connection_time =
         data_.trajectory_connectivity_state.LastConnectionTime(
             node_id.trajectory_id, submap_id.trajectory_id);
     if (node_id.trajectory_id == submap_id.trajectory_id ||
+        !allow_global_localization ||
         node_time <
             last_connection_time +
                 common::FromSeconds(
@@ -1036,6 +1046,12 @@ void PoseGraph3D::SetInitialGlobalPose(const int trajectory_id,
                                        const transform::Rigid3d& pose) {
   absl::MutexLock locker(&mutex_);
   data_.initial_global_poses[trajectory_id] = pose;
+}
+
+void PoseGraph3D::SetAllowGlobalLocalization(const int trajectory_id,
+                                             const bool allow) {
+  absl::MutexLock locker(&mutex_);
+  data_.allow_global_localization[trajectory_id] = allow;
 }
 
 transform::Rigid3d PoseGraph3D::GetInterpolatedGlobalTrajectoryPose(

@@ -158,6 +158,10 @@ int MapBuilder::AddTrajectoryBuilder(
         trajectory_id,
         transform::ToRigid3(trajectory_options.initial_global_pose()));
   }
+
+  pose_graph_->SetAllowGlobalLocalization(
+      trajectory_id, trajectory_options.allow_global_localization());
+
   proto::TrajectoryBuilderOptionsWithSensorIds options_with_sensor_ids_proto;
   for (const auto& sensor_id : expected_sensor_ids) {
     *options_with_sensor_ids_proto.add_sensor_id() = ToProto(sensor_id);

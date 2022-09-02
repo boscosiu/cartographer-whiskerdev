@@ -86,6 +86,8 @@ struct PoseGraphData {
 
   std::map<int, transform::Rigid3d> initial_global_poses;
 
+  std::map<int, bool> allow_global_localization;
+
   std::vector<PoseGraphInterface::Constraint> constraints;
 };
 

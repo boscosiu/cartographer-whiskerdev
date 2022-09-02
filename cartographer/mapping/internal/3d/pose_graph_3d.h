@@ -152,6 +152,8 @@ class PoseGraph3D : public PoseGraph {
   void SetInitialGlobalPose(int trajectory_id,
                             const transform::Rigid3d& pose) override
       LOCKS_EXCLUDED(mutex_);
+  void SetAllowGlobalLocalization(int trajectory_id, bool allow) override
+      LOCKS_EXCLUDED(mutex_);
   void SetGlobalSlamOptimizationCallback(
       PoseGraphInterface::GlobalSlamOptimizationCallback callback) override;
   transform::Rigid3d GetInterpolatedGlobalTrajectoryPose(
