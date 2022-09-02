@@ -1,3 +1,5 @@
+    ⚠️ This branch contains the custom Cartographer changes that the `Whisker <https://github.com/boscosiu/Whisker>`_ project consumes
+
 .. Copyright 2016 The Cartographer Authors
 
 .. Licensed under the Apache License, Version 2.0 (the "License");
