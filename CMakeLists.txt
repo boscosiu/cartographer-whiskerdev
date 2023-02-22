@@ -294,6 +294,7 @@ target_link_libraries(${PROJECT_NAME} PUBLIC ${PROTOBUF_LIBRARY}
   absl::time
   absl::utility 
 )
+target_compile_definitions(${PROJECT_NAME} PUBLIC ABSL_LEGACY_THREAD_ANNOTATIONS)
 if (NOT WIN32)
   target_link_libraries(${PROJECT_NAME} PUBLIC pthread)
 endif()
